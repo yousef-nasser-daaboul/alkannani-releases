@@ -19,7 +19,7 @@
 - آخر إصدار (زر التنزيل في الصفحة): `https://github.com/yousef-nasser-daaboul/alkannani-releases/releases/latest/download/alkannani.apk`
 - إصدار محدد (الحقل `url` في `version.json`): `https://github.com/yousef-nasser-daaboul/alkannani-releases/releases/download/v1.0.0/alkannani.apk`
 
-كل ملفات APK تُبنى بملف البناء `apk` في `eas.json` في مستودع التطبيق، وتُوقَّع بمفتاح EAS نفسه، وإلا لن يستطيع المستخدم التثبيت فوق الإصدار السابق. خطوات النشر بالترتيب في `store/RELEASE.md` في مستودع التطبيق.
+كل ملفات APK تُبنى بملف البناء `apk` في `eas.json` في مستودع التطبيق، وتُوقَّع بمفتاح EAS نفسه، وإلا لن يستطيع المستخدم التثبيت فوق الإصدار السابق. خطوات النشر بالترتيب في قسم توزيع APK في `store/RELEASE.md` في مستودع التطبيق (يُضاف مع أول إصدار علني).
 
 ## `version.json`
 
