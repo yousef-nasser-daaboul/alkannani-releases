@@ -1,0 +1,190 @@
+<!doctype html>
+<!--
+  Download page of the الكنّاني app (com.alkannani.muezzin), served by GitHub Pages.
+  The download button always points at the APK attached to the latest GitHub Release, so it needs
+  no edit per release. The version line and notes are read from version.json; without it the page still works.
+-->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="نزّل تطبيق الكنّاني لمواقيت الصلاة والأذان على Android.">
+<meta property="og:title" content="الكنّاني: مواقيت الصلاة والأذان">
+<meta property="og:description" content="نزّل تطبيق الكنّاني لأجهزة Android.">
+<meta property="og:image" content="https://yousef-nasser-daaboul.github.io/alkannani-releases/icon.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="icon.jpg">
+<title>تنزيل الكنّاني</title>
+<style>
+  :root {
+    --bg: #F6F2EA;
+    --surface: #FFFFFF;
+    --text: #1C2430;
+    --muted: #5A6472;
+    --primary: #1D5FAF;
+    --on-primary: #FFFFFF;
+    --accent: #B98A3E;
+    --border: #E3DCCD;
+    --summary-bg: #EAF1FA;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0B1528;
+      --surface: #111E36;
+      --text: #E8ECF2;
+      --muted: #A3AEBF;
+      --primary: #8DB8EC;
+      --on-primary: #0B1528;
+      --accent: #D9B26A;
+      --border: #22324F;
+      --summary-bg: #14284A;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", "Geeza Pro", "Segoe UI", Tahoma, "Arial", system-ui, sans-serif;
+    font-size: 17px;
+    line-height: 1.85;
+  }
+  main {
+    max-width: 36rem;
+    margin: 0 auto;
+    padding: 32px 16px 48px;
+  }
+  header { text-align: center; }
+  .icon {
+    width: 104px;
+    height: 104px;
+    border-radius: 24px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  }
+  h1 {
+    margin: 14px 0 0;
+    font-size: 2rem;
+    line-height: 1.3;
+    color: var(--primary);
+  }
+  .tagline { margin: 2px 0 0; color: var(--muted); }
+  .download {
+    margin: 24px 0 8px;
+    text-align: center;
+  }
+  .button {
+    display: block;
+    background: var(--primary);
+    color: var(--on-primary);
+    text-decoration: none;
+    font-size: 1.25rem;
+    font-weight: bold;
+    border-radius: 14px;
+    padding: 14px 20px;
+  }
+  .button small { display: block; font-size: 0.85rem; font-weight: normal; opacity: 0.9; }
+  .button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  .version { margin: 10px 0 0; color: var(--muted); font-size: 0.95rem; }
+  .notes {
+    background: var(--summary-bg);
+    border-inline-start: 4px solid var(--accent);
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin: 12px 0 0;
+    text-align: start;
+    white-space: pre-line;
+  }
+  section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 4px 18px 10px;
+    margin-top: 16px;
+  }
+  h2 {
+    font-size: 1.2rem;
+    line-height: 1.5;
+    margin: 14px 0 6px;
+    color: var(--primary);
+  }
+  h3 { font-size: 1.02rem; margin: 12px 0 2px; }
+  p, ul, ol { margin: 8px 0; }
+  ul, ol { padding-inline-start: 1.4em; }
+  li { margin: 6px 0; }
+  a { color: var(--primary); text-underline-offset: 3px; overflow-wrap: anywhere; }
+  .path { color: var(--muted); }
+  .ltr { direction: ltr; unicode-bidi: isolate; }
+  footer { margin-top: 24px; color: var(--muted); font-size: 0.9rem; text-align: center; }
+  footer a { margin: 0 6px; }
+</style>
+</head>
+<body>
+<main>
+
+<header>
+  <img class="icon" src="icon.jpg" width="104" height="104" alt="">
+  <h1>الكنّاني</h1>
+  <p class="tagline">مواقيت الصلاة والأذان</p>
+</header>
+
+<div class="download">
+  <a class="button" href="https://github.com/yousef-nasser-daaboul/alkannani-releases/releases/latest/download/alkannani.apk">
+    تنزيل التطبيق
+    <small>لأجهزة Android · ملف APK</small>
+  </a>
+  <p class="version" id="version" hidden>آخر إصدار: <span class="ltr" id="version-number"></span></p>
+  <p class="notes" id="notes" hidden></p>
+</div>
+
+<section id="install">
+  <h2>طريقة التثبيت</h2>
+  <ol>
+    <li>اضغط «تنزيل التطبيق». إن سألك المتصفح عن الملف، فاختر «تنزيل».</li>
+    <li>افتح الملف <span class="ltr">alkannani.apk</span> من إشعار التنزيل، أو من مجلد «التنزيلات».</li>
+    <li>إن ظهرت رسالة أن هاتفك لا يسمح بتثبيت التطبيقات من هذا المصدر، فاضغط «الإعدادات»، وفعّل «السماح من هذا المصدر»، ثم ارجع واضغط «تثبيت».</li>
+    <li>إن ظهر تنبيه من Google Play Protect لأن التطبيق ليس من المتجر، فاختر «مزيد من التفاصيل» ثم «التثبيت على أي حال».</li>
+  </ol>
+  <h3>السماح بالتثبيت من مصادر غير معروفة</h3>
+  <p>إن لم تظهر لك رسالة الخطوة 3، فعّل الإذن بنفسك للتطبيق الذي نزّلت به الملف (المتصفح مثل Chrome، أو مدير الملفات):</p>
+  <ul>
+    <li>Android 8 وما بعده: <span class="path">الإعدادات ← التطبيقات ← Chrome ← تثبيت التطبيقات غير المعروفة ← السماح من هذا المصدر</span></li>
+    <li>الإصدارات الأقدم: <span class="path">الإعدادات ← الأمان ← مصادر غير معروفة</span></li>
+  </ul>
+  <p>قد تختلف أسماء القوائم قليلاً حسب نوع الهاتف. يمكنك إلغاء الإذن بعد التثبيت.</p>
+</section>
+
+<section id="updates">
+  <h2>التحديثات</h2>
+  <p>ينبّهك التطبيق عند صدور إصدار جديد. نزّله من هذه الصفحة وثبّته فوق الإصدار الحالي، فتبقى إعداداتك وملفات الأذان كما هي. لا تحذف التطبيق قبل التحديث، لأن حذفه يمسح إعداداتك.</p>
+  <p>التطبيق غير متاح الآن لأجهزة iPhone.</p>
+</section>
+
+<footer>
+  <a href="privacy-policy/">سياسة الخصوصية</a>
+  <a href="https://github.com/yousef-nasser-daaboul/alkannani-releases/releases">كل الإصدارات</a>
+</footer>
+
+</main>
+<script>
+  // Fills the version line and notes from version.json. Any failure leaves them hidden.
+  fetch('version.json', { cache: 'no-cache' })
+    .then(function (response) { return response.ok ? response.json() : null; })
+    .then(function (info) {
+      if (!info) return;
+      if (typeof info.version === 'string' && info.version) {
+        document.getElementById('version-number').textContent = info.version;
+        document.getElementById('version').hidden = false;
+      }
+      if (typeof info.notes === 'string' && info.notes.trim()) {
+        var notes = document.getElementById('notes');
+        notes.textContent = info.notes.trim();
+        notes.hidden = false;
+      }
+    })
+    .catch(function () {});
+</script>
+</body>
+</html>
