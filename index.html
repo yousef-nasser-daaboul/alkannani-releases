@@ -2,164 +2,828 @@
 <!--
   Download page of the الكنّاني app (com.alkannani.muezzin), served by GitHub Pages.
   The download button always points at the APK attached to the latest GitHub Release, so it needs
-  no edit per release. The version line and notes are read from version.json; without it the page still works.
+  no edit per release. The version and notes are read from version.json, and the release date and
+  file size from the GitHub API; without them the page still works, and only those lines stay hidden.
+  Screenshots in screenshots/{light,dark}/ follow the visitor's light or dark mode.
 -->
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<meta name="description" content="نزّل تطبيق الكنّاني لمواقيت الصلاة والأذان على Android.">
+<meta name="theme-color" content="#F6F2EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1528" media="(prefers-color-scheme: dark)">
+<meta name="description" content="نزّل تطبيق الكنّاني لمواقيت الصلاة والأذان على Android: الأذان في وقته، وعدّاد للصلاة القادمة، وويدجت للشاشة الرئيسية، دون إعلانات.">
 <meta property="og:title" content="الكنّاني: مواقيت الصلاة والأذان">
 <meta property="og:description" content="نزّل تطبيق الكنّاني لأجهزة Android.">
 <meta property="og:image" content="https://yousef-nasser-daaboul.github.io/alkannani-releases/icon.jpg">
 <meta property="og:type" content="website">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="apple-touch-icon" href="icon.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=IBM+Plex+Sans+Arabic:wght@400;600;700&display=swap">
 <title>تنزيل الكنّاني</title>
 <style>
+  /* The app's own colors (src/theme/tokens.ts in the app repo). */
   :root {
     --bg: #F6F2EA;
-    --surface: #FFFFFF;
-    --text: #1C2430;
-    --muted: #5A6472;
+    --surface: #FFFDF8;
+    --sunken: #EEE8DC;
+    --text: #13233D;
+    --muted: #5E6B7E;
     --primary: #1D5FAF;
+    --primary-strong: #134784;
+    --primary-soft: #DCE8F6;
     --on-primary: #FFFFFF;
-    --accent: #B98A3E;
-    --border: #E3DCCD;
-    --summary-bg: #EAF1FA;
+    --accent: #C9A35B;
+    --accent-text: #8C6A2C;
+    --accent-soft: #F4EAD3;
+    --border: #E2D9C8;
+    --shadow: rgba(90, 74, 42, 0.16);
+    /* The Android screens drawn in the install steps. */
+    --m-screen: #E9E6E0;
+    --m-sheet: #FFFFFF;
+    --m-text: #1C1B1F;
+    --m-muted: #4F4B55;
+    --m-action: #1D5FAF;
+    --m-scrim: rgba(28, 27, 31, 0.32);
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #0B1528;
       --surface: #111E36;
-      --text: #E8ECF2;
-      --muted: #A3AEBF;
-      --primary: #8DB8EC;
+      --sunken: #081022;
+      --text: #EEE7D8;
+      --muted: #9EAAC0;
+      --primary: #8FB4E8;
+      --primary-strong: #B5CEF2;
+      --primary-soft: #16294A;
       --on-primary: #0B1528;
-      --accent: #D9B26A;
-      --border: #22324F;
-      --summary-bg: #14284A;
+      --accent: #D8B46C;
+      --accent-text: #E2C17F;
+      --accent-soft: #2A2614;
+      --border: #22345A;
+      --shadow: rgba(0, 0, 0, 0.45);
+      --m-screen: #111318;
+      --m-sheet: #2B2E35;
+      --m-text: #E6E1E5;
+      --m-muted: #C4C7CF;
+      --m-action: #A8C7FA;
+      --m-scrim: rgba(0, 0, 0, 0.5);
     }
   }
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font-family: "Noto Naskh Arabic", "Noto Sans Arabic", "Geeza Pro", "Segoe UI", Tahoma, "Arial", system-ui, sans-serif;
+    font-family: "IBM Plex Sans Arabic", "Noto Sans Arabic", "Segoe UI", Tahoma, system-ui, sans-serif;
     font-size: 17px;
-    line-height: 1.85;
+    line-height: 1.8;
   }
   main {
-    max-width: 36rem;
+    max-width: 64rem;
     margin: 0 auto;
-    padding: 32px 16px 48px;
+    padding: 0 16px 48px;
   }
-  header { text-align: center; }
+  a { color: var(--primary); text-underline-offset: 3px; overflow-wrap: anywhere; }
+  .ltr { direction: ltr; unicode-bidi: isolate; }
+  .path { color: var(--text); }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  [hidden] { display: none !important; }
+
+  /* Hero */
+  .hero {
+    display: grid;
+    gap: 24px;
+    align-items: center;
+    padding: 40px 0 8px;
+    text-align: center;
+  }
   .icon {
-    width: 104px;
-    height: 104px;
+    width: 96px;
+    height: 96px;
     border-radius: 24px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 8px 24px var(--shadow);
   }
   h1 {
-    margin: 14px 0 0;
-    font-size: 2rem;
+    margin: 12px 0 0;
+    font-family: "Amiri", "Noto Naskh Arabic", serif;
+    font-size: 2.6rem;
     line-height: 1.3;
     color: var(--primary);
   }
-  .tagline { margin: 2px 0 0; color: var(--muted); }
-  .download {
-    margin: 24px 0 8px;
-    text-align: center;
+  .tagline { margin: 0; color: var(--accent-text); font-weight: 600; font-size: 1.1rem; }
+  .lead { margin: 12px auto 0; max-width: 30rem; color: var(--muted); }
+  .actions {
+    display: grid;
+    gap: 10px;
+    max-width: 24rem;
+    margin: 24px auto 0;
   }
   .button {
     display: block;
-    background: var(--primary);
-    color: var(--on-primary);
-    text-decoration: none;
-    font-size: 1.25rem;
-    font-weight: bold;
+    border: 0;
     border-radius: 14px;
     padding: 14px 20px;
-  }
-  .button small { display: block; font-size: 0.85rem; font-weight: normal; opacity: 0.9; }
-  .button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
-  .version { margin: 10px 0 0; color: var(--muted); font-size: 0.95rem; }
-  .notes {
-    background: var(--summary-bg);
-    border-inline-start: 4px solid var(--accent);
-    border-radius: 10px;
-    padding: 10px 16px;
-    margin: 12px 0 0;
-    text-align: start;
-    white-space: pre-line;
-  }
-  section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 4px 18px 10px;
-    margin-top: 16px;
-  }
-  h2 {
+    font-weight: 700;
     font-size: 1.2rem;
     line-height: 1.5;
-    margin: 14px 0 6px;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .button small { display: block; font-size: 0.85rem; font-weight: 400; opacity: 0.9; }
+  .button-primary { background: var(--primary); color: var(--on-primary); box-shadow: 0 6px 18px var(--shadow); }
+  .button-primary:hover { background: var(--primary-strong); }
+  .button-secondary {
+    background: var(--surface);
+    color: var(--primary);
+    border: 1px solid var(--border);
+    font-size: 1.02rem;
+    padding: 11px 18px;
+  }
+  .button-secondary:hover { background: var(--primary-soft); }
+  .button-secondary svg { width: 20px; height: 20px; vertical-align: -4px; margin-inline-end: 6px; }
+  .meta { margin: 10px 0 0; color: var(--muted); font-size: 0.92rem; }
+  .meta span { unicode-bidi: isolate; }
+  .meta span + span::before { content: " · "; }
+  .platform-note {
+    margin: 12px auto 0;
+    max-width: 24rem;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: var(--accent-soft);
+    font-size: 0.95rem;
+  }
+  .hero-shot { display: none; }
+  @media (min-width: 760px) {
+    .hero { grid-template-columns: 1fr auto; text-align: start; padding-top: 56px; }
+    .lead, .actions, .platform-note { margin-inline: 0; }
+    .hero-shot { display: block; width: 260px; }
+  }
+
+  /* Sections */
+  section { margin-top: 48px; }
+  h2 {
+    margin: 0 0 16px;
+    font-size: 1.45rem;
+    line-height: 1.5;
+  }
+  h2::after {
+    content: "";
+    display: block;
+    width: 44px;
+    height: 3px;
+    margin-top: 6px;
+    border-radius: 2px;
+    background: var(--accent);
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+
+  /* Screenshots */
+  .shot {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 540 / 1212;
+    border-radius: 22px;
+    border: 1px solid var(--border);
+    box-shadow: 0 10px 28px var(--shadow);
+    background: var(--sunken);
+  }
+  .shot.cropped { aspect-ratio: 540 / 675; }
+  .gallery {
+    display: flex;
+    gap: 16px;
+    margin: 0 -16px;
+    padding: 4px 16px 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    scrollbar-width: thin;
+  }
+  .gallery figure {
+    flex: 0 0 clamp(168px, 46vw, 210px);
+    margin: 0;
+    scroll-snap-align: start;
+  }
+  .gallery figcaption, .showcase figcaption {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .section-lead { margin: -6px 0 16px; color: var(--muted); }
+
+  /* Widgets and lock screen */
+  .showcase {
+    display: grid;
+    gap: 20px;
+    padding: 20px;
+  }
+  .showcase-shots { display: flex; justify-content: center; gap: 16px; }
+  .showcase-shots figure { flex: 0 1 260px; margin: 0; }
+  .showcase-text h3 { margin: 0; font-size: 1.05rem; color: var(--accent-text); }
+  .showcase-text h3 ~ h3 { margin-top: 12px; }
+  .showcase-text p { margin: 2px 0 0; }
+  .showcase-text .howto {
+    margin-top: 18px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--primary-soft);
+    font-size: 0.95rem;
+  }
+  @media (min-width: 760px) {
+    .showcase { grid-template-columns: auto 1fr; align-items: center; gap: 32px; padding: 28px; }
+    .showcase-shots figure { flex-basis: 250px; }
+  }
+
+  /* First-run setup */
+  .setup {
+    display: flex;
+    gap: 16px;
+    margin: 0 -16px;
+    padding: 4px 16px 20px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 16px;
+    scrollbar-width: thin;
+    list-style: none;
+    counter-reset: setup;
+  }
+  .setup li { flex: 0 0 clamp(168px, 46vw, 210px); scroll-snap-align: start; counter-increment: setup; }
+  .setup figure { margin: 0; }
+  .setup figcaption { margin-top: 12px; color: var(--muted); font-size: 0.92rem; line-height: 1.6; }
+  .setup figcaption strong { display: block; color: var(--text); font-size: 1rem; }
+  .setup figcaption strong::before {
+    content: counter(setup);
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    margin-inline-end: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--surface);
+    font-size: 0.85rem;
+  }
+  @media (min-width: 900px) {
+    .setup { display: grid; grid-template-columns: repeat(4, 1fr); margin: 0; padding: 4px 0 0; overflow: visible; }
+  }
+  .gallery button, .showcase button, .setup button {
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 22px;
+    background: none;
+    cursor: zoom-in;
+  }
+
+  /* Features */
+  .features {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 560px) { .features { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 900px) { .features { grid-template-columns: repeat(3, 1fr); } }
+  .feature {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-content: start;
+    gap: 4px 14px;
+    padding: 16px;
+  }
+  .feature svg {
+    grid-row: span 2;
+    width: 44px;
+    height: 44px;
+    padding: 10px;
+    border-radius: 12px;
+    background: var(--primary-soft);
     color: var(--primary);
   }
-  h3 { font-size: 1.02rem; margin: 12px 0 2px; }
-  p, ul, ol { margin: 8px 0; }
-  ul, ol { padding-inline-start: 1.4em; }
-  li { margin: 6px 0; }
-  a { color: var(--primary); text-underline-offset: 3px; overflow-wrap: anywhere; }
-  .path { color: var(--muted); }
-  .ltr { direction: ltr; unicode-bidi: isolate; }
-  footer { margin-top: 24px; color: var(--muted); font-size: 0.9rem; text-align: center; }
-  footer a { margin: 0 6px; }
+  .feature h3 { margin: 0; font-size: 1.05rem; line-height: 1.5; }
+  .feature p { margin: 0; color: var(--muted); font-size: 0.95rem; line-height: 1.7; }
+
+  /* What's new */
+  .whatsnew {
+    padding: 20px;
+    border-inline-start: 4px solid var(--accent);
+  }
+  .whatsnew-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+  }
+  .whatsnew h3 { margin: 0; font-size: 1.2rem; }
+  .badge {
+    padding: 2px 12px;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent-text);
+    font-size: 0.88rem;
+    font-weight: 600;
+  }
+  .whatsnew-date { color: var(--muted); font-size: 0.92rem; }
+  .whatsnew-notes p { margin: 12px 0 0; }
+  .whatsnew-notes ul { margin: 12px 0 0; padding-inline-start: 1.3em; }
+  .whatsnew-notes li { margin: 6px 0; }
+  .whatsnew-notes li::marker { color: var(--accent); }
+  .whatsnew-foot { margin: 14px 0 0; color: var(--muted); font-size: 0.95rem; }
+
+  /* FAQ */
+  .faq details { padding: 0 18px; }
+  .faq details + details { border-top: 1px solid var(--border); }
+  .faq summary {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 0;
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq summary::-webkit-details-marker { display: none; }
+  .faq summary::after { content: "+"; color: var(--accent-text); font-size: 1.3rem; line-height: 1.4; }
+  .faq details[open] summary::after { content: "−"; }
+  .faq details > :not(summary) { margin: 0 0 14px; color: var(--muted); }
+  .faq ul { padding-inline-start: 1.3em; }
+  .link-button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  footer {
+    margin-top: 48px;
+    color: var(--muted);
+    font-size: 0.9rem;
+    text-align: center;
+  }
+  footer a { margin: 0 8px; }
+
+  /* Download bar that follows on phones once the main button scrolls away */
+  .sticky {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 5;
+    padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border);
+    transform: translateY(110%);
+    transition: transform 0.2s ease;
+  }
+  .sticky.shown { transform: none; }
+  .sticky .button { max-width: 24rem; margin: 0 auto; padding: 10px 16px; font-size: 1.05rem; }
+  @media (min-width: 760px) { .sticky { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .sticky { transition: none; } }
+
+  /* Dialogs */
+  dialog {
+    width: calc(100% - 24px);
+    max-width: 30rem;
+    max-height: calc(100dvh - 24px);
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  }
+  dialog[open] { display: flex; flex-direction: column; }
+  dialog::backdrop { background: rgba(5, 10, 20, 0.6); }
+  .dialog-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dialog-head h2 { margin: 0; font-size: 1.15rem; }
+  .dialog-head h2::after { display: none; }
+  .close {
+    width: 40px;
+    height: 40px;
+    flex: none;
+    border: 0;
+    border-radius: 50%;
+    background: var(--sunken);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .viewer { max-width: 26rem; background: var(--bg); }
+  .viewer .shot { aspect-ratio: auto; border: 0; border-radius: 0; box-shadow: none; }
+  .viewer-body { overflow-y: auto; }
+  .viewer-caption { margin: 0; padding: 10px 18px 14px; color: var(--muted); text-align: center; white-space: pre-line; }
+
+  /* Install steps */
+  .steps {
+    display: flex;
+    flex: 1;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .steps::-webkit-scrollbar { display: none; }
+  .step {
+    flex: 0 0 100%;
+    padding: 18px 20px 8px;
+    overflow-y: auto;
+    scroll-snap-align: start;
+  }
+  .step-number { margin: 0; color: var(--accent-text); font-weight: 600; font-size: 0.9rem; }
+  .step h3 { margin: 0 0 6px; font-size: 1.15rem; line-height: 1.5; }
+  .step p { margin: 6px 0; }
+  .step .hint { color: var(--muted); font-size: 0.92rem; }
+  .step-figure { display: flex; justify-content: center; margin: 4px 0 14px; }
+  .dialog-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .dots { display: flex; gap: 6px; }
+  .dots span { width: 8px; height: 8px; border-radius: 4px; background: var(--border); transition: background 0.2s, width 0.2s; }
+  .dots span.on { width: 20px; background: var(--accent); }
+  .nav { min-width: 92px; padding: 8px 14px; border-radius: 12px; font-size: 1rem; }
+  .nav:disabled { opacity: 0.4; cursor: default; }
+
+  /* Drawn Android screens. Approximate: menus and wording differ between phones. */
+  .phone {
+    width: min(200px, 56vw);
+    aspect-ratio: 9 / 18.5;
+    padding: 7px;
+    border-radius: 30px;
+    background: #15171C;
+    box-shadow: 0 10px 28px var(--shadow);
+  }
+  .screen {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 23px;
+    background: var(--m-screen);
+    color: var(--m-text);
+    font-size: 11px;
+    line-height: 1.55;
+  }
+  .screen img.full { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .m-status { display: flex; justify-content: space-between; padding: 6px 14px 0; color: var(--m-muted); font-size: 9px; }
+  .m-page { padding: 18px 16px; text-align: center; opacity: 0.55; }
+  .m-page img { width: 42px; height: 42px; border-radius: 11px; }
+  .m-line { height: 7px; margin: 8px auto 0; border-radius: 4px; background: var(--m-muted); opacity: 0.35; }
+  .m-pill { height: 24px; margin: 14px 10px 0; border-radius: 8px; background: var(--primary); }
+  .m-scrim { position: absolute; inset: 0; background: var(--m-scrim); }
+  .m-sheet {
+    position: absolute;
+    inset-inline: 8px;
+    padding: 14px;
+    border-radius: 18px;
+    background: var(--m-sheet);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+  }
+  .m-bottom { bottom: 10px; }
+  .m-center { top: 50%; transform: translateY(-50%); }
+  .m-top { top: 26px; }
+  .m-title { margin: 0 0 4px; font-weight: 700; font-size: 12.5px; }
+  .m-head .m-title { margin: 0; }
+  .m-text { margin: 0; color: var(--m-muted); }
+  .m-head + .m-text { margin-top: 8px; }
+  .m-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; }
+  .m-actions.start { justify-content: flex-start; }
+  .m-btn { padding: 3px 9px; border-radius: 999px; color: var(--m-action); font-weight: 600; }
+  .m-head { display: flex; align-items: center; gap: 8px; }
+  .m-head img, .m-app-dot { width: 26px; height: 26px; flex: none; border-radius: 7px; }
+  .m-app-dot { display: grid; place-items: center; border-radius: 50%; background: #4285F4; color: #FFFFFF; font-weight: 700; font-size: 10px; }
+  .m-small { color: var(--m-muted); font-size: 9.5px; }
+  .m-bar { display: flex; align-items: center; gap: 8px; padding: 12px 14px; font-weight: 700; font-size: 12.5px; }
+  .m-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 8px; padding: 10px; border-radius: 14px; }
+  .m-row.raised { background: var(--m-sheet); }
+  .m-switch { position: relative; width: 32px; height: 18px; flex: none; border-radius: 9px; background: var(--m-action); }
+  /* On, in right-to-left: the knob sits at the left end. */
+  .m-switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; border-radius: 50%; background: var(--m-sheet); }
+  .m-shield { width: 26px; height: 26px; flex: none; color: #34A853; }
+  .m-link { display: inline-block; margin-top: 6px; padding: 0 4px; border-radius: 6px; color: var(--m-action); font-weight: 600; }
+  /* What to press */
+  .tap { position: relative; box-shadow: 0 0 0 2.5px var(--accent); background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .tap::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.55;
+    animation: pulse 1.6s ease-out infinite;
+    pointer-events: none;
+  }
+  @keyframes pulse {
+    from { transform: scale(0.5); opacity: 0.7; }
+    to { transform: scale(1.8); opacity: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { .tap::after { animation: none; } }
 </style>
 </head>
 <body>
 <main>
 
-<header>
-  <img class="icon" src="icon.jpg" width="104" height="104" alt="">
-  <h1>الكنّاني</h1>
-  <p class="tagline">مواقيت الصلاة والأذان</p>
+<header class="hero">
+  <div>
+    <img class="icon" src="icon.jpg" width="96" height="96" alt="">
+    <h1>الكنّاني</h1>
+    <p class="tagline">مواقيت الصلاة والأذان</p>
+    <p class="lead">يعرض الوقت المتبقي للصلاة القادمة، ويُبقيه أمامك في إشعار دائم، ويشغّل في وقت كل صلاة الأذانَ الذي اخترته لها. دون إعلانات، ودون حساب.</p>
+    <div class="actions">
+      <a class="button button-primary" id="download" href="https://github.com/yousef-nasser-daaboul/alkannani-releases/releases/latest/download/alkannani.apk">
+        تنزيل التطبيق
+        <small>لأجهزة Android · ملف APK</small>
+      </a>
+      <button class="button button-secondary" type="button" data-open-install>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M12 7.5v7M9 11.5l3 3 3-3"/></svg>
+        طريقة التثبيت خطوة بخطوة
+      </button>
+    </div>
+    <p class="meta" id="meta"><span>Android 7 فما فوق</span></p>
+    <p class="platform-note" id="note-ios" hidden>التطبيق غير متاح الآن لأجهزة iPhone وiPad، فهو لأجهزة Android فقط.</p>
+    <p class="platform-note" id="note-desktop" hidden>افتح هذه الصفحة من هاتفك الذي يعمل بنظام Android، ونزّل التطبيق منه مباشرة.</p>
+  </div>
+  <picture class="hero-shot">
+    <source srcset="screenshots/dark/01-home.jpg" media="(prefers-color-scheme: dark)">
+    <img class="shot" src="screenshots/light/01-home.jpg" width="540" height="1212" alt="الشاشة الرئيسية: الصلاة القادمة والعدّاد وأوقات اليوم">
+  </picture>
 </header>
 
-<div class="download">
-  <a class="button" href="https://github.com/yousef-nasser-daaboul/alkannani-releases/releases/latest/download/alkannani.apk">
-    تنزيل التطبيق
-    <small>لأجهزة Android · ملف APK</small>
-  </a>
-  <p class="version" id="version" hidden>آخر إصدار: <span class="ltr" id="version-number"></span></p>
-  <p class="notes" id="notes" hidden></p>
-</div>
-
-<section id="install">
-  <h2>طريقة التثبيت</h2>
-  <ol>
-    <li>اضغط «تنزيل التطبيق». إن سألك المتصفح عن الملف، فاختر «تنزيل».</li>
-    <li>افتح الملف <span class="ltr">alkannani.apk</span> من إشعار التنزيل، أو من مجلد «التنزيلات».</li>
-    <li>إن ظهرت رسالة أن هاتفك لا يسمح بتثبيت التطبيقات من هذا المصدر، فاضغط «الإعدادات»، وفعّل «السماح من هذا المصدر»، ثم ارجع واضغط «تثبيت».</li>
-    <li>إن ظهر تنبيه من Google Play Protect لأن التطبيق ليس من المتجر، فاختر «مزيد من التفاصيل» ثم «التثبيت على أي حال».</li>
-  </ol>
-  <h3>السماح بالتثبيت من مصادر غير معروفة</h3>
-  <p>إن لم تظهر لك رسالة الخطوة 3، فعّل الإذن بنفسك للتطبيق الذي نزّلت به الملف (المتصفح مثل Chrome، أو مدير الملفات):</p>
-  <ul>
-    <li>Android 8 وما بعده: <span class="path">الإعدادات ← التطبيقات ← Chrome ← تثبيت التطبيقات غير المعروفة ← السماح من هذا المصدر</span></li>
-    <li>الإصدارات الأقدم: <span class="path">الإعدادات ← الأمان ← مصادر غير معروفة</span></li>
-  </ul>
-  <p>قد تختلف أسماء القوائم قليلاً حسب نوع الهاتف. يمكنك إلغاء الإذن بعد التثبيت.</p>
+<section id="screenshots" aria-labelledby="screenshots-title">
+  <h2 id="screenshots-title">صور من التطبيق</h2>
+  <div class="gallery">
+    <figure>
+      <button type="button" data-view>
+        <picture>
+          <source srcset="screenshots/dark/01-home.jpg" media="(prefers-color-scheme: dark)">
+          <img class="shot" src="screenshots/light/01-home.jpg" width="540" height="1212" loading="lazy" alt="الشاشة الرئيسية">
+        </picture>
+      </button>
+      <figcaption>الصلاة القادمة والعدّاد وأوقات اليوم</figcaption>
+    </figure>
+    <figure>
+      <button type="button" data-view>
+        <picture>
+          <source srcset="screenshots/dark/05-notification.jpg" media="(prefers-color-scheme: dark)">
+          <img class="shot" src="screenshots/light/05-notification.jpg" width="540" height="1212" loading="lazy" alt="الإشعار الدائم">
+        </picture>
+      </button>
+      <figcaption>عدّاد دائم في شريط الإشعارات</figcaption>
+    </figure>
+    <figure>
+      <button type="button" data-view>
+        <picture>
+          <source srcset="screenshots/dark/02-prayer.jpg" media="(prefers-color-scheme: dark)">
+          <img class="shot" src="screenshots/light/02-prayer.jpg" width="540" height="1212" loading="lazy" alt="إعدادات الصلاة">
+        </picture>
+      </button>
+      <figcaption>لكل صلاة أذانها ومستوى صوتها</figcaption>
+    </figure>
+    <figure>
+      <button type="button" data-view>
+        <picture>
+          <source srcset="screenshots/dark/03-adhans.jpg" media="(prefers-color-scheme: dark)">
+          <img class="shot" src="screenshots/light/03-adhans.jpg" width="540" height="1212" loading="lazy" alt="قائمة الأذانات">
+        </picture>
+      </button>
+      <figcaption>استمع إلى الأذان قبل أن تختاره</figcaption>
+    </figure>
+    <figure>
+      <button type="button" data-view>
+        <picture>
+          <source srcset="screenshots/dark/04-settings.jpg" media="(prefers-color-scheme: dark)">
+          <img class="shot" src="screenshots/light/04-settings.jpg" width="540" height="1212" loading="lazy" alt="الإعدادات">
+        </picture>
+      </button>
+      <figcaption>الموقع وأذان كل صلاة</figcaption>
+    </figure>
+    <figure>
+      <button type="button" data-view>
+        <picture>
+          <source srcset="screenshots/dark/09-cities.jpg" media="(prefers-color-scheme: dark)">
+          <img class="shot" src="screenshots/light/09-cities.jpg" width="540" height="1212" loading="lazy" alt="اختيار المدينة">
+        </picture>
+      </button>
+      <figcaption>اختر مدينتك دون إنترنت</figcaption>
+    </figure>
+  </div>
 </section>
 
-<section id="updates">
-  <h2>التحديثات</h2>
-  <p>ينبّهك التطبيق عند صدور إصدار جديد. نزّله من هذه الصفحة وثبّته فوق الإصدار الحالي، فتبقى إعداداتك وملفات الأذان كما هي. لا تحذف التطبيق قبل التحديث، لأن حذفه يمسح إعداداتك.</p>
-  <p>التطبيق غير متاح الآن لأجهزة iPhone.</p>
+<section id="widgets" aria-labelledby="widgets-title">
+  <h2 id="widgets-title">ويدجت للشاشة الرئيسية، وعدّاد على شاشة القفل</h2>
+  <div class="showcase card">
+    <div class="showcase-shots">
+      <figure>
+        <button type="button" data-view>
+          <picture>
+            <source srcset="screenshots/dark/07-widgets.jpg" media="(prefers-color-scheme: dark)">
+            <img class="shot cropped" src="screenshots/light/07-widgets.jpg" width="540" height="675" loading="lazy" alt="الويدجت الصغيرة والكبيرة على الشاشة الرئيسية">
+          </picture>
+        </button>
+        <figcaption>الويدجت بمقاسيها</figcaption>
+      </figure>
+      <figure>
+        <button type="button" data-view>
+          <picture>
+            <source srcset="screenshots/dark/08-lock-screen.jpg" media="(prefers-color-scheme: dark)">
+            <img class="shot cropped" src="screenshots/light/08-lock-screen.jpg" width="540" height="675" loading="lazy" alt="العدّاد على شاشة القفل">
+          </picture>
+        </button>
+        <figcaption>العدّاد على شاشة القفل</figcaption>
+      </figure>
+    </div>
+    <div class="showcase-text">
+      <h3>الصغيرة</h3>
+      <p>الصلاة القادمة ووقتها، والعدّاد إليها.</p>
+      <h3>الكبيرة</h3>
+      <p>أوقات اليوم كلها مع تمييز القادمة، والعدّاد، والتاريخ الهجري، ومنطقتك.</p>
+      <h3>شاشة القفل</h3>
+      <p>يظهر الإشعار الدائم على شاشة القفل، فترى الوقت المتبقي للصلاة دون أن تفتح الهاتف.</p>
+      <p class="howto"><strong>لإضافة الويدجت:</strong> اضغط مطوّلاً على مكان فارغ في الشاشة الرئيسية، ثم اختر «الأدوات» (Widgets)، وابحث عن «الكنّاني»، واختر المقاس الذي تريده.</p>
+    </div>
+  </div>
+</section>
+
+<section id="features" aria-labelledby="features-title">
+  <h2 id="features-title">ماذا يقدّم التطبيق</h2>
+  <ul class="features">
+    <li class="feature card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+      <h3>مواقيت دقيقة لمنطقتك</h3>
+      <p>تُحسب على جهازك وتعمل دون إنترنت. وفي سوريا يعرض جداول وزارة الأوقاف الرسمية لكل منطقة.</p>
+    </li>
+    <li class="feature card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 10v4h4l5 4V6L8 10H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+      <h3>الأذان في وقته</h3>
+      <p>لكل صلاة: أذان، أو إشعار فقط، أو لا شيء. ويعمل الأذان والتطبيق مغلق والشاشة مقفلة.</p>
+    </li>
+    <li class="feature card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg>
+      <h3>اختر المؤذّن</h3>
+      <p>أذانات بأصوات المرعشلي والأستاذ بلال عبد العزيز وسعد، وأذانات خاصة بالفجر. تُحفظ على جهازك بعد أول تحميل.</p>
+    </li>
+    <li class="feature card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7.5 2.5 7.5h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+      <h3>عدّاد في الإشعارات</h3>
+      <p>إشعار دائم يعدّ للصلاة القادمة ويظهر على شاشة القفل، وعند توسيعه تظهر أوقات اليوم كلها.</p>
+    </li>
+    <li class="feature card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="17" height="7" rx="2"/></svg>
+      <h3>ويدجت للشاشة الرئيسية</h3>
+      <p>بمقاسين: صغيرة للصلاة القادمة مع العدّاد، وكبيرة للأوقات كلها والتاريخ الهجري.</p>
+    </li>
+    <li class="feature card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18h18M6.5 18a5.5 5.5 0 0 1 11 0"/><path d="M12 4v4M4.9 8.9l1.8 1.8M19.1 8.9l-1.8 1.8"/></svg>
+      <h3>تذكير قبل الفجر والعشاء</h3>
+      <p>تذكير صوتي قبل أذان الفجر كل يوم، وقبل أذان العشاء يومَي الأحد والخميس.</p>
+    </li>
+    <li class="feature card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>
+      <h3>التاريخ الهجري</h3>
+      <p>بتقويم أم القرى، ويمكنك تعديله بيوم أو يومين.</p>
+    </li>
+    <li class="feature card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7.5 3v5.5c0 4.5-3.2 8.2-7.5 9.5-4.3-1.3-7.5-5-7.5-9.5V6L12 3z"/><path d="M9 12l2 2 4-4"/></svg>
+      <h3>خصوصيتك محفوظة</h3>
+      <p>لا حساب ولا إعلانات ولا أدوات تحليل. موقعك وإعداداتك تبقى على جهازك.</p>
+    </li>
+    <li class="feature card">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor"/></svg>
+      <h3>فاتح وداكن</h3>
+      <p>واجهة عربية بالكامل، تتبع وضع جهازك أو تختاره بنفسك.</p>
+    </li>
+  </ul>
+</section>
+
+<section id="setup" aria-labelledby="setup-title">
+  <h2 id="setup-title">الإعداد عند أول فتح</h2>
+  <p class="section-lead">أربع شاشات قصيرة، مرة واحدة فقط، ثم يعمل الأذان في وقته. ويمكنك تغيير كل شيء لاحقاً من الإعدادات.</p>
+  <ol class="setup">
+    <li>
+      <figure>
+        <button type="button" data-view>
+          <picture>
+            <source srcset="screenshots/dark/06-welcome.jpg" media="(prefers-color-scheme: dark)">
+            <img class="shot" src="screenshots/light/06-welcome.jpg" width="540" height="1212" loading="lazy" alt="شاشة الترحيب">
+          </picture>
+        </button>
+        <figcaption><strong>الترحيب</strong>اضغط «ابدأ».</figcaption>
+      </figure>
+    </li>
+    <li>
+      <figure>
+        <button type="button" data-view>
+          <picture>
+            <source srcset="screenshots/dark/10-setup-location.jpg" media="(prefers-color-scheme: dark)">
+            <img class="shot" src="screenshots/light/10-setup-location.jpg" width="540" height="1212" loading="lazy" alt="تحديد الموقع">
+          </picture>
+        </button>
+        <figcaption><strong>موقعك</strong>حدّد موقعك، أو اختر مدينتك من القائمة. يبقى الموقع على جهازك.</figcaption>
+      </figure>
+    </li>
+    <li>
+      <figure>
+        <button type="button" data-view>
+          <picture>
+            <source srcset="screenshots/dark/11-setup-permissions.jpg" media="(prefers-color-scheme: dark)">
+            <img class="shot" src="screenshots/light/11-setup-permissions.jpg" width="540" height="1212" loading="lazy" alt="الصلاحيات">
+          </picture>
+        </button>
+        <figcaption><strong>الصلاحيات</strong>اسمح بالإشعارات والمنبّهات الدقيقة، وأوقف توفير البطارية للتطبيق، ليصلك الأذان في وقته.</figcaption>
+      </figure>
+    </li>
+    <li>
+      <figure>
+        <button type="button" data-view>
+          <picture>
+            <source srcset="screenshots/dark/12-setup-audio.jpg" media="(prefers-color-scheme: dark)">
+            <img class="shot" src="screenshots/light/12-setup-audio.jpg" width="540" height="1212" loading="lazy" alt="إعداد الصوت">
+          </picture>
+        </button>
+        <figcaption><strong>الصوت</strong>اختر الأذان والتذكير ومستوى الصوت، فتُحمَّل الملفات مرة واحدة (نحو 18 ميغابايت) لتعمل دون إنترنت.</figcaption>
+      </figure>
+    </li>
+  </ol>
+</section>
+
+<section id="whatsnew" aria-labelledby="whatsnew-title" hidden>
+  <h2 id="whatsnew-title">ما الجديد في آخر تحديث</h2>
+  <article class="whatsnew card">
+    <div class="whatsnew-head">
+      <h3 id="whatsnew-version">الإصدار الأخير</h3>
+      <span class="badge">آخر إصدار</span>
+      <time class="whatsnew-date" id="whatsnew-date" hidden></time>
+    </div>
+    <div class="whatsnew-notes" id="whatsnew-notes"></div>
+    <p class="whatsnew-foot">عندك إصدار أقدم؟ ثبّت الجديد فوقه مباشرة، فتبقى إعداداتك كما هي. <a href="https://github.com/yousef-nasser-daaboul/alkannani-releases/releases">سجلّ كل الإصدارات</a></p>
+  </article>
+</section>
+
+<section id="faq" aria-labelledby="faq-title">
+  <h2 id="faq-title">أسئلة شائعة</h2>
+  <div class="faq card">
+    <details>
+      <summary>لماذا يحذّرني الهاتف عند التثبيت؟</summary>
+      <p>التطبيق ليس على Google Play بعد، والهاتف يحذّر من كل تطبيق يأتي من خارج المتجر، لا من هذا التطبيق بعينه. نزّل الملف من هذه الصفحة فقط، ثم اتبع <button class="link-button" type="button" data-open-install>خطوات التثبيت بالصور</button>.</p>
+    </details>
+    <details>
+      <summary>كيف أحدّث التطبيق؟</summary>
+      <p>ينبّهك التطبيق عند صدور إصدار جديد. نزّله من هذه الصفحة وثبّته فوق الإصدار الحالي، فتبقى إعداداتك وملفات الأذان كما هي. لا تحذف التطبيق قبل التحديث، لأن حذفه يمسح إعداداتك.</p>
+    </details>
+    <details>
+      <summary>هل يحتاج إلى إنترنت؟</summary>
+      <p>مرة واحدة، لتحميل الأذانات التي تختارها (نحو 18 ميغابايت بالاختيار الافتراضي). بعدها تُحسب الأوقات ويُشغَّل الأذان دون إنترنت.</p>
+    </details>
+    <details>
+      <summary>لماذا يطلب هذه الصلاحيات؟</summary>
+      <ul>
+        <li>الإشعارات: لإشعار الصلاة والعدّاد الدائم.</li>
+        <li>المنبّهات الدقيقة: ليبدأ الأذان في وقته بالضبط.</li>
+        <li>توفير البطارية: حتى لا يؤخّر النظام الأذان أو يوقفه.</li>
+        <li>الموقع: اختياري، ويمكنك اختيار مدينتك يدوياً بدلاً منه.</li>
+      </ul>
+    </details>
+    <details>
+      <summary>هل يعمل على iPhone؟</summary>
+      <p>لا، التطبيق متاح الآن لأجهزة Android فقط.</p>
+    </details>
+  </div>
 </section>
 
 <footer>
@@ -168,23 +832,302 @@
 </footer>
 
 </main>
+
+<div class="sticky" id="sticky" aria-hidden="true">
+  <a class="button button-primary" href="https://github.com/yousef-nasser-daaboul/alkannani-releases/releases/latest/download/alkannani.apk" tabindex="-1">تنزيل التطبيق</a>
+</div>
+
+<dialog class="viewer" id="viewer" aria-labelledby="viewer-title">
+  <div class="dialog-head">
+    <h2 id="viewer-title"></h2>
+    <button class="close" type="button" data-close aria-label="إغلاق">×</button>
+  </div>
+  <div class="viewer-body">
+    <img class="shot" id="viewer-image" alt="">
+    <p class="viewer-caption" id="viewer-caption"></p>
+  </div>
+</dialog>
+
+<dialog id="install" aria-labelledby="install-title">
+  <div class="dialog-head">
+    <h2 id="install-title">طريقة التثبيت</h2>
+    <button class="close" type="button" data-close aria-label="إغلاق">×</button>
+  </div>
+
+  <div class="steps" id="steps">
+    <article class="step">
+      <div class="step-figure">
+        <div class="phone" aria-hidden="true"><div class="screen">
+          <div class="m-status"><span>12:00</span><span>▾ ▮</span></div>
+          <div class="m-page"><img src="icon.jpg" alt=""><div class="m-line" style="width: 50%"></div><div class="m-line" style="width: 70%"></div><div class="m-pill"></div></div>
+          <div class="m-scrim"></div>
+          <div class="m-sheet m-bottom">
+            <p class="m-title">هل تريد تنزيل الملف؟</p>
+            <p class="m-text">قد يضرّ هذا النوع من الملفات بجهازك. هل تريد الاحتفاظ بالملف <span class="ltr">alkannani.apk</span> على أي حال؟</p>
+            <div class="m-actions"><span class="m-btn">إلغاء</span><span class="m-btn tap">تنزيل على أي حال</span></div>
+          </div>
+        </div></div>
+      </div>
+      <p class="step-number">الخطوة 1</p>
+      <h3>نزّل الملف</h3>
+      <p>اضغط «تنزيل التطبيق». إن سألك المتصفح عن الملف، فاختر «تنزيل» أو «تنزيل على أي حال».</p>
+    </article>
+
+    <article class="step">
+      <div class="step-figure">
+        <div class="phone" aria-hidden="true"><div class="screen">
+          <div class="m-status"><span>12:01</span><span>▾ ▮</span></div>
+          <div class="m-sheet m-top">
+            <div class="m-head"><span class="m-app-dot">C</span><span class="m-small">Chrome · الآن</span></div>
+            <p class="m-title" style="margin-top: 6px">اكتمل التنزيل</p>
+            <p class="m-text"><span class="ltr">alkannani.apk</span></p>
+            <div class="m-actions start"><span class="m-btn tap">فتح</span></div>
+          </div>
+        </div></div>
+      </div>
+      <p class="step-number">الخطوة 2</p>
+      <h3>افتح الملف</h3>
+      <p>اضغط «فتح» في إشعار التنزيل، أو افتح الملف <span class="ltr">alkannani.apk</span> من مجلد «التنزيلات».</p>
+    </article>
+
+    <article class="step">
+      <div class="step-figure">
+        <div class="phone" aria-hidden="true"><div class="screen">
+          <div class="m-status"><span>12:01</span><span>▾ ▮</span></div>
+          <div class="m-page"><div class="m-line" style="width: 60%"></div><div class="m-line" style="width: 40%"></div></div>
+          <div class="m-scrim"></div>
+          <div class="m-sheet m-center">
+            <div class="m-head"><span class="m-app-dot">C</span><p class="m-title">Chrome</p></div>
+            <p class="m-text">لأسباب أمنية، لا يُسمح لهاتفك بتثبيت تطبيقات غير معروفة من هذا المصدر.</p>
+            <div class="m-actions"><span class="m-btn">إلغاء</span><span class="m-btn tap">الإعدادات</span></div>
+          </div>
+        </div></div>
+      </div>
+      <p class="step-number">الخطوة 3</p>
+      <h3>اسمح بالتثبيت من المتصفح</h3>
+      <p>في المرة الأولى فقط، يرفض الهاتف تثبيت تطبيق من خارج المتجر. اضغط «الإعدادات».</p>
+    </article>
+
+    <article class="step">
+      <div class="step-figure">
+        <div class="phone" aria-hidden="true"><div class="screen">
+          <div class="m-status"><span>12:02</span><span>▾ ▮</span></div>
+          <div class="m-bar"><span>→</span><span>تثبيت التطبيقات غير المعروفة</span></div>
+          <div class="m-row"><span class="m-head"><span class="m-app-dot">C</span><span>Chrome</span></span></div>
+          <div class="m-row raised tap"><span>السماح من هذا المصدر</span><span class="m-switch"></span></div>
+        </div></div>
+      </div>
+      <p class="step-number">الخطوة 4</p>
+      <h3>فعّل «السماح من هذا المصدر»</h3>
+      <p>ثم ارجع بزر الرجوع، فتظهر لك نافذة التثبيت. يمكنك إلغاء هذا الإذن بعد التثبيت.</p>
+      <p class="hint">لم تظهر لك رسالة الخطوة 3؟ فعّل الإذن بنفسك للتطبيق الذي نزّلت به الملف: <span class="path">الإعدادات ← التطبيقات ← Chrome ← تثبيت التطبيقات غير المعروفة</span>. وفي Android 7: <span class="path">الإعدادات ← الأمان ← مصادر غير معروفة</span>. قد تختلف أسماء القوائم قليلاً حسب نوع الهاتف.</p>
+    </article>
+
+    <article class="step">
+      <div class="step-figure">
+        <div class="phone" aria-hidden="true"><div class="screen">
+          <div class="m-status"><span>12:02</span><span>▾ ▮</span></div>
+          <div class="m-scrim"></div>
+          <div class="m-sheet m-bottom">
+            <div class="m-head"><img src="icon.jpg" alt=""><p class="m-title">الكنّاني</p></div>
+            <p class="m-text">هل تريد تثبيت هذا التطبيق؟</p>
+            <div class="m-actions"><span class="m-btn">إلغاء</span><span class="m-btn tap">تثبيت</span></div>
+          </div>
+        </div></div>
+      </div>
+      <p class="step-number">الخطوة 5</p>
+      <h3>اضغط «تثبيت»</h3>
+      <p>وإن كان التطبيق مثبّتاً من قبل، يسألك الهاتف «هل تريد تحديث هذا التطبيق؟»، فاضغط «تحديث».</p>
+    </article>
+
+    <article class="step">
+      <div class="step-figure">
+        <div class="phone" aria-hidden="true"><div class="screen">
+          <div class="m-status"><span>12:03</span><span>▾ ▮</span></div>
+          <div class="m-scrim"></div>
+          <div class="m-sheet m-center">
+            <div class="m-head">
+              <svg class="m-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l7.5 3v5.5c0 4.5-3.2 8.2-7.5 9.5-4.3-1.3-7.5-5-7.5-9.5V6L12 3z"/></svg>
+              <p class="m-title">Google Play Protect</p>
+            </div>
+            <p class="m-text">لم يتعرّف Play Protect على مطوّر هذا التطبيق.</p>
+            <span class="m-small">مزيد من التفاصيل ▴</span><br>
+            <span class="m-link tap">التثبيت على أي حال</span>
+            <div class="m-actions"><span class="m-btn">حسناً</span></div>
+          </div>
+        </div></div>
+      </div>
+      <p class="step-number">الخطوة 6 · قد لا تظهر</p>
+      <h3>إن نبّهك Play Protect</h3>
+      <p>يظهر هذا التنبيه لأن التطبيق ليس من المتجر. اضغط «مزيد من التفاصيل»، ثم «التثبيت على أي حال».</p>
+    </article>
+
+    <article class="step">
+      <div class="step-figure">
+        <div class="phone"><div class="screen">
+          <picture>
+            <source srcset="screenshots/dark/06-welcome.jpg" media="(prefers-color-scheme: dark)">
+            <img class="full" src="screenshots/light/06-welcome.jpg" width="540" height="1212" loading="lazy" alt="شاشة الترحيب في التطبيق">
+          </picture>
+        </div></div>
+      </div>
+      <p class="step-number">الخطوة 7</p>
+      <h3>افتح التطبيق</h3>
+      <p>اضغط «فتح»، ثم اتبع شاشة الترحيب: حدّد موقعك أو اختر مدينتك، واسمح بالإشعارات وبقية الصلاحيات التي يطلبها، ليصلك الأذان في وقته.</p>
+    </article>
+  </div>
+
+  <div class="dialog-foot">
+    <button class="button button-secondary nav" type="button" id="prev">السابق</button>
+    <div class="dots" id="dots" aria-hidden="true"></div>
+    <button class="button button-primary nav" type="button" id="next">التالي</button>
+  </div>
+</dialog>
+
 <script>
-  // Fills the version line and notes from version.json. Any failure leaves them hidden.
+  var RELEASES_API = 'https://api.github.com/repos/yousef-nasser-daaboul/alkannani-releases/releases/latest';
+  var meta = document.getElementById('meta');
+
+  function addMeta(text, first) {
+    var span = document.createElement('span');
+    span.textContent = text;
+    if (first) meta.insertBefore(span, meta.firstChild);
+    else meta.appendChild(span);
+  }
+
+  // Notes written one change per line show as a list; a single paragraph stays a paragraph.
+  function renderNotes(notes) {
+    var box = document.getElementById('whatsnew-notes');
+    var lines = notes.split('\n')
+      .map(function (line) { return line.replace(/^[\s•\-–]+/, '').trim(); })
+      .filter(Boolean);
+    if (lines.length === 1) {
+      var p = document.createElement('p');
+      p.textContent = lines[0];
+      box.appendChild(p);
+      return;
+    }
+    var list = document.createElement('ul');
+    lines.forEach(function (line) {
+      var li = document.createElement('li');
+      li.textContent = line;
+      list.appendChild(li);
+    });
+    box.appendChild(list);
+  }
+
+  // Version and notes from version.json. Without notes, the "what's new" section stays hidden.
   fetch('version.json', { cache: 'no-cache' })
     .then(function (response) { return response.ok ? response.json() : null; })
     .then(function (info) {
       if (!info) return;
       if (typeof info.version === 'string' && info.version) {
-        document.getElementById('version-number').textContent = info.version;
-        document.getElementById('version').hidden = false;
+        addMeta('الإصدار ' + info.version, true);
+        document.getElementById('whatsnew-version').textContent = 'الإصدار ' + info.version;
       }
       if (typeof info.notes === 'string' && info.notes.trim()) {
-        var notes = document.getElementById('notes');
-        notes.textContent = info.notes.trim();
-        notes.hidden = false;
+        renderNotes(info.notes.trim());
+        document.getElementById('whatsnew').hidden = false;
       }
     })
     .catch(function () {});
+
+  // Release date and file size from GitHub. Rate-limited per visitor, so they are only a nicety.
+  fetch(RELEASES_API, { headers: { Accept: 'application/vnd.github+json' } })
+    .then(function (response) { return response.ok ? response.json() : null; })
+    .then(function (release) {
+      if (!release) return;
+      var apk = (release.assets || []).filter(function (asset) { return asset.name === 'alkannani.apk'; })[0];
+      if (apk && apk.size) addMeta('الحجم ' + Math.max(1, Math.round(apk.size / 1048576)) + ' ميغابايت');
+      var date = release.published_at && new Date(release.published_at);
+      if (date && !isNaN(date)) {
+        var time = document.getElementById('whatsnew-date');
+        time.dateTime = release.published_at;
+        time.textContent = 'صدر في ' + date.toLocaleDateString('ar-SY-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric' });
+        time.hidden = false;
+      }
+    })
+    .catch(function () {});
+
+  // A visitor on an iPhone or a computer is told where the app runs.
+  var ua = navigator.userAgent;
+  var isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
+  if (isIOS) document.getElementById('note-ios').hidden = false;
+  else if (!/Android|Mobi/.test(ua)) document.getElementById('note-desktop').hidden = false;
+
+  // Dialogs close with ×, Escape, or a tap outside them.
+  document.querySelectorAll('dialog').forEach(function (dialog) {
+    dialog.addEventListener('click', function (event) {
+      if (event.target === dialog || event.target.closest('[data-close]')) dialog.close();
+    });
+  });
+
+  // Screenshot viewer: shows the picture already chosen for the visitor's light or dark mode.
+  var viewer = document.getElementById('viewer');
+  var viewerImage = document.getElementById('viewer-image');
+  document.querySelectorAll('[data-view]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      var img = button.querySelector('img');
+      viewerImage.src = img.currentSrc || img.src;
+      viewerImage.alt = img.alt;
+      document.getElementById('viewer-title').textContent = img.alt;
+      document.getElementById('viewer-caption').textContent = button.closest('figure').querySelector('figcaption').innerText;
+      viewer.showModal();
+    });
+  });
+
+  // Install steps: swipe between them, or use السابق and التالي.
+  var install = document.getElementById('install');
+  var track = document.getElementById('steps');
+  var steps = track.querySelectorAll('.step');
+  var dots = document.getElementById('dots');
+  var prev = document.getElementById('prev');
+  var next = document.getElementById('next');
+  var current = 0;
+  steps.forEach(function () { dots.appendChild(document.createElement('span')); });
+
+  function show(index) {
+    current = index;
+    prev.disabled = index === 0;
+    next.textContent = index === steps.length - 1 ? 'تم' : 'التالي';
+    dots.querySelectorAll('span').forEach(function (dot, i) { dot.classList.toggle('on', i === index); });
+  }
+  function goTo(index) {
+    // Right to left, later steps sit further left, so this offset is negative, as scrollLeft expects.
+    track.scrollTo({ left: steps[index].offsetLeft - steps[0].offsetLeft, behavior: 'smooth' });
+    show(index);
+  }
+  track.addEventListener('scroll', function () {
+    var index = Math.round(Math.abs(track.scrollLeft) / track.clientWidth);
+    if (index !== current && steps[index]) show(index);
+  }, { passive: true });
+  prev.addEventListener('click', function () { if (current > 0) goTo(current - 1); });
+  next.addEventListener('click', function () {
+    if (current < steps.length - 1) goTo(current + 1);
+    else install.close();
+  });
+  install.addEventListener('keydown', function (event) {
+    // Right to left, the left arrow moves forward.
+    if (event.key === 'ArrowLeft' && current < steps.length - 1) goTo(current + 1);
+    if (event.key === 'ArrowRight' && current > 0) goTo(current - 1);
+  });
+  document.querySelectorAll('[data-open-install]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      install.showModal();
+      track.scrollLeft = 0;
+      show(0);
+    });
+  });
+  show(0);
+
+  // On phones, a download bar follows once the main button has scrolled out of sight upwards.
+  var sticky = document.getElementById('sticky');
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      var entry = entries[0];
+      sticky.classList.toggle('shown', !entry.isIntersecting && entry.boundingClientRect.top < 0);
+    }).observe(document.getElementById('download'));
+  }
 </script>
 </body>
 </html>
